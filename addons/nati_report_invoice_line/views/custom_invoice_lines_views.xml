@@ -1,0 +1,156 @@
+<odoo>
+    <!-- Define the tree view -->
+    <record id="view_custom_invoice_line_list" model="ir.ui.view">
+        <field name="name">custom.invoice.line.list</field>
+        <field name="model">custom.invoice.line</field>
+        <field name="arch" type="xml">
+            <list string="Custom Invoice Lines" create="false" edit="false" delete="false" >
+                <field name="invoice_date"/>
+                <field name="invoice_month"/>
+                <field name="move_id" widget="many2one"/>
+                <field name="invoice_number" optional="hide"/>
+                <field name="invoice_reference" optional="hide"/>
+                <field name="journal_id"/>
+                <field name="account_id" optional="hide"/>
+                <field name="company_id"/>
+                <field name="team_id" optional="hide"/>
+                <field name="customer_code"/>
+                <field name="partner_id"/>
+                <field name="state_id" optional="hide"/>
+                <field name="city" optional="hide"/>
+                <field name="product_category"/>
+                <field name="product_code"/>
+                <field name="barcode"/>
+                <field name="product_id"/>
+                <field name="cost" optional="hide"/>
+                <field name="quantity"/>
+                <field name="price_unit" optional="hide"/>
+                <field name="discount"/>
+                <field name="price_unit_after_discount"/>
+                <field name="price_subtotal" sum="Subtotal (No Tax)"/>
+                <field name="price_total" sum="Total (With Tax)"/>
+                <field name="taxes" optional="hide"/>
+                <field name="debit" optional="hide"/>
+                <field name="credit" optional="hide"/>
+                <field name="amount_currency" optional="hide"/>
+                <field name="invoice_type"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_custom_invoice_line_search" model="ir.ui.view">
+        <field name="name">custom.invoice.line.search</field>
+        <field name="model">custom.invoice.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="account_id"/>
+                <field name="move_id"/>
+                <field name="partner_id"/>
+                <field name="company_id" filter_domain="[('company_id', 'ilike', self)]"/>
+                <filter string="Date" name="filter_date" date="invoice_date"/>
+                <filter string="Invoice Type" name="filter_invoice_type" domain="[('invoice_type', '=', 'invoice')]"/>
+                <filter string="Refund Type" name="filter_refund_type" domain="[('invoice_type', '=', 'refund')]"/>
+                <group expand="1" string="Group By">
+                    <filter string="Journal Entry" name="group_move_id" context="{'group_by':'move_id'}"/>
+                    <filter string="Account" name="group_account_id" context="{'group_by':'account_id'}"/>
+                    <filter string="Partner" name="group_partner_id" context="{'group_by':'partner_id'}"/>
+                    <filter string="Journal" name="group_journal_id" context="{'group_by':'journal_id'}"/>
+                    <filter string="Date" name="group_invoice_date" context="{'group_by':'invoice_date'}" domain="[]"/>
+                    <filter string="Company" name="group_company_id" context="{'group_by':'company_id'}"/>
+                    <filter string="Sales Team" name="group_team_id" context="{'group_by':'team_id'}"/>
+                    <filter string="Product" name="group_product_id" context="{'group_by':'product_id'}"/>
+                    <filter string="Product Category" name="group_product_category" context="{'group_by':'product_category'}"/>
+                    <filter string="Customer Code" name="group_customer_code" context="{'group_by':'customer_code'}"/>
+                    <filter string="State" name="group_state_id" context="{'group_by':'state_id'}"/>
+                    <filter string="City" name="group_city" context="{'group_by':'city'}"/>
+                    <filter string="Invoice Type" name="group_invoice_type" context="{'group_by':'invoice_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Define the pivot view -->
+    <record id="view_custom_invoice_line_pivot" model="ir.ui.view">
+        <field name="name">custom.invoice.line.pivot</field>
+        <field name="model">custom.invoice.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Custom Invoice Lines Pivot">
+                <field name="product_category" type="row"/>
+                <field name="quantity" type="measure" operator="sum"/>
+                <field name="price_unit" type="measure" operator="sum"/>
+                <field name="discount" type="measure" operator="sum"/>
+                <field name="price_subtotal" type="measure" operator="sum"/>
+                <field name="price_total" type="measure" operator="sum"/>
+                <field name="debit" type="measure" operator="sum"/>
+                <field name="credit" type="measure" operator="sum"/>
+                <field name="amount_currency" type="measure" operator="sum"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Define the graph view -->
+    <record id="view_custom_invoice_line_graph" model="ir.ui.view">
+        <field name="name">custom.invoice.line.graph</field>
+        <field name="model">custom.invoice.line</field>
+        <field name="arch" type="xml">
+            <graph string="Custom Invoice Lines Graph" type="bar">
+                <field name="product_id" type="row"/>
+                <field name="product_category" type="col"/>
+                <field name="price_total" type="measure"/>
+                <field name="quantity" type="measure"/>
+                <field name="debit" type="measure"/>
+                <field name="credit" type="measure"/>
+                <field name="price_subtotal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_custom_invoice_lines" model="ir.actions.act_window">
+        <field name="name">Reports Invoices</field>
+        <field name="res_model">custom.invoice.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="search_view_id" ref="view_custom_invoice_line_search"/>
+        <field name="context">{}</field>
+        <field name="path">reportsinvoices</field>
+<!--        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_custom_invoice_line_list')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_custom_invoice_line_pivot')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_custom_invoice_line_graph')})
+        ]"/>-->
+    </record>
+
+    <record id="action_view_custom_invoice_line_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_custom_invoice_line_list"/>
+        <field name="act_window_id" ref="action_custom_invoice_lines"/>
+    </record>
+        <record id="action_view_custom_invoice_line_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="5"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_custom_invoice_line_pivot"/>
+        <field name="act_window_id" ref="action_custom_invoice_lines"/>
+    </record>
+
+    <record id="action_view_custom_invoice_line_graph" model="ir.actions.act_window.view">
+        <field name="sequence" eval="6"/>
+        <field name="view_mode">graph</field>
+        <field name="view_id" ref="view_custom_invoice_line_graph"/>
+        <field name="act_window_id" ref="action_custom_invoice_lines"/>
+    </record>
+
+    <record id="rule_custom_invoice_line_company" model="ir.rule">
+        <field name="name">Custom Invoice Line Rule : Multi-company access</field>
+        <field name="model_id" ref="model_custom_invoice_line"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <menuitem id="menu_custom_invoice_lines_root"
+              name="Invoice Reports"
+              web_icon="nati_report_invoice_line,static/description/icon.png"/>
+
+    <menuitem id="menu_custom_invoice_lines"
+              name="Custom Invoice Lines"
+              parent="menu_custom_invoice_lines_root"
+              action="action_custom_invoice_lines"/>
+</odoo>
