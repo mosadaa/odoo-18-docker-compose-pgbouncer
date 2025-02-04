@@ -6,13 +6,13 @@ Install [docker](https://docs.docker.com/get-docker/) and [docker-compose](https
 
 ``` bash
 cd /opt
-curl -s https://raw.githubusercontent.com/HaithamSaqr/odoo-18-docker-compose/pgbouncer/run.sh | sudo bash -s odoo18 10018 20018
+curl -s https://raw.githubusercontent.com/HaithamSaqr/odoo-18-docker-compose-pgbouncer/master/run.sh | sudo bash -s pg18 10018 20018
 ```
 and/or run the following to set up another Odoo instance @ `localhost:11018` (default master password: `falconvalley`):
 
 ``` bash
 cd /opt
-curl -s https://raw.githubusercontent.com/HaithamSaqr/odoo-18-docker-compose/pgbouncer/run.sh | sudo bash -s odoo18 11018 21018
+curl -s https://raw.githubusercontent.com/HaithamSaqr/odoo-18-docker-compose-pgbouncer/master/run.sh | sudo bash -s pg18 11018 21018
 ```
 
 Some arguments:
