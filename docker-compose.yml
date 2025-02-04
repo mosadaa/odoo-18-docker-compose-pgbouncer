@@ -15,6 +15,11 @@ services:
     restart: always
     volumes:
       - ./postgresql:/var/lib/postgresql/data
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+    interval: 5s
+    timeout: 5s
+    retries: 5
 
   odoo18:
     image: odoo:18
@@ -55,5 +60,6 @@ services:
     ports:
       - "6432:6432"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
