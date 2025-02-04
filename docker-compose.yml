@@ -44,13 +44,13 @@ services:
           memory: 4g
     shm_size: '2gb'
     depends_on:
-      - pgbouncer
+      - db
     ports:
       - "10018:8069"
       - "20018:8072"
     environment:
-      HOST: pgbouncer
-      PORT: 6432
+      HOST: db
+      PORT: 5432
       USER: odoo
       PASSWORD: odoo18@2024
     volumes:
