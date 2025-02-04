@@ -50,7 +50,7 @@ services:
           memory: 512m
     environment:
       DB_HOST: db
-      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=odoo18@2024"
+      DATABASES: "odoo=host=db port=5432 dbname=odoo18db  user=odoo password=odoo18@2024"
       AUTH_FILE: "/etc/pgbouncer/userlist.txt"
       POOL_MODE: "session"
       MAX_CLIENT_CONN: "100"
