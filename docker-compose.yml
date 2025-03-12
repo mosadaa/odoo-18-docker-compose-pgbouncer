@@ -29,16 +29,20 @@ services:
           memory: 2g
     shm_size: '2gb'
     depends_on:
-      - pgbouncer
+      pgbouncer:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "11018:8069"
       - "21018:8072"
     tty: true
-    command: --
+    command: odoo
     environment:
       HOST: pgbouncer
       USER: odoo
       PASSWORD: odoo18@2024
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./addons:/mnt/extra-addons
       - ./etc:/etc/odoo
@@ -65,3 +69,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  redis:
+    image: redis:latest
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+    restart: always

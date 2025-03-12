@@ -10,7 +10,7 @@ services:
           memory: 4000M
     environment:
       - POSTGRES_DB=postgres
-      - POSTGRES_PASSWORD=P@ss@123@123
+      - POSTGRES_PASSWORD=odoo18@2024
       - POSTGRES_USER=odoo
     hostname: odoo18-db
     healthcheck:
@@ -49,10 +49,10 @@ services:
         limits:
           memory: 4000M
     tty: true
-    command: --
+    command: odoo
     environment:
-      - HOST=db
-      - PASSWORD=P@ss@123@123
+      - HOST=pgbouncer
+      - PASSWORD=odoo18@2024
       - REDIS_URL=redis://redis:6379/0
       - USER=odoo
     hostname: odoo18
@@ -123,6 +123,31 @@ services:
       - default
     hostname: odoo18-redis
 
+  pgbouncer:
+    image: pgbouncer:latest
+    container_name: odoo18-pgbouncer
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    environment:
+      DB_HOST: db
+      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=odoo18@2024"
+      AUTH_FILE: "/etc/pgbouncer/userlist.txt"
+      POOL_MODE: "session"
+      MAX_CLIENT_CONN: "100"
+      DEFAULT_POOL_SIZE: "30"
+      LISTEN_PORT: "6432"
+    volumes:
+      - /DATA/AppData/odoo18/pgbouncer/userlist.txt
+    ports:
+      - "6432:6432"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - default
+
 networks:
   default:
     name: odoo18_default
@@ -139,25 +164,3 @@ x-casaos:
   title:
     custom: odoo18
     en_us: db
-
-  pgbouncer:
-    image: edoburu/pgbouncer
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-    environment:
-      DB_HOST: db
-      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=P@ss@123@123"
-      AUTH_FILE: "/etc/pgbouncer/userlist.txt"
-      POOL_MODE: "session"
-      MAX_CLIENT_CONN: "100"
-      DEFAULT_POOL_SIZE: "30"
-      LISTEN_PORT: "6432"
-    volumes:
-      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
-    ports:
-      - "6432:6432"
-    depends_on:
-      db:
-        condition: service_healthy
