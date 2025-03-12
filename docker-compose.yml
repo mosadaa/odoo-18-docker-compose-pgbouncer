@@ -10,7 +10,7 @@ services:
     shm_size: '2gb'
     environment:
       POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: P@ss@123@123
+      POSTGRES_PASSWORD: odoo18@2024
       POSTGRES_DB: postgres
     restart: always
     volumes:
@@ -33,10 +33,12 @@ services:
     ports:
       - "11018:8069"
       - "21018:8072"
+    tty: true
+    command: --
     environment:
       HOST: pgbouncer
       USER: odoo
-      PASSWORD: P@ss@123@123
+      PASSWORD: odoo18@2024
     volumes:
       - ./addons:/mnt/extra-addons
       - ./etc:/etc/odoo
@@ -50,7 +52,7 @@ services:
           memory: 512m
     environment:
       DB_HOST: db
-      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=P@ss@123@123"
+      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=odoo18@2024"
       AUTH_FILE: "/etc/pgbouncer/userlist.txt"
       POOL_MODE: "session"
       MAX_CLIENT_CONN: "100"

@@ -1,0 +1,163 @@
+name: odoo18
+services:
+  db:
+    cpu_shares: 50
+    command: []
+    container_name: odoo18-db
+    deploy:
+      resources:
+        limits:
+          memory: 4000M
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=P@ss@123@123
+      - POSTGRES_USER=odoo
+    hostname: odoo18-db
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U odoo -d postgres
+      timeout: 5s
+      interval: 5s
+      retries: 5
+    image: postgres:17
+    labels:
+      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+    restart: always
+    shm_size: "2g"
+    volumes:
+      - type: bind
+        source: /DATA/AppData/odoo18/postgresql
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: true
+    networks:
+      - default
+
+  odoo18:
+    cpu_shares: 50
+    container_name: odoo18
+    depends_on:
+      db:
+        condition: service_healthy
+        required: true
+      redis:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          memory: 4000M
+    tty: true
+    command: --
+    environment:
+      - HOST=db
+      - PASSWORD=P@ss@123@123
+      - REDIS_URL=redis://redis:6379/0
+      - USER=odoo
+    hostname: odoo18
+    image: odoo:18
+    labels:
+      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+    ports:
+      - target: 8069
+        published: "10018"
+        protocol: tcp
+      - target: 8072
+        published: "20018"
+        protocol: tcp
+    restart: always
+    shm_size: "2g"
+    volumes:
+      - type: bind
+        source: /DATA/AppData/odoo18/addons
+        target: /mnt/extra-addons
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /DATA/AppData/odoo18/etc
+        target: /etc/odoo
+        bind:
+          create_host_path: true
+    x-casaos:
+      author: self
+      category: self
+      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+      index: /
+      is_uncontrolled: false
+      port_map: "10018"
+      scheme: http
+      title:
+        custom: odoo18
+    networks:
+      - default
+
+  redis:
+    cpu_shares: 50
+    command:
+      - redis-server --save 60 1 --loglevel warning
+    container_name: odoo18-redis
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      timeout: 5s
+      interval: 5s
+      retries: 5
+    image: redis:latest
+    labels:
+      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+    ports:
+      - target: 6379
+        published: "6379"
+        protocol: tcp
+    restart: always
+    volumes:
+      - /DATA/AppData/odoo18/redis:/data
+    networks:
+      - default
+    hostname: odoo18-redis
+
+networks:
+  default:
+    name: odoo18_default
+
+x-casaos:
+  author: self
+  category: self
+  icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+  index: /
+  is_uncontrolled: false
+  port_map: "10018"
+  scheme: http
+  store_app_id: odoo18
+  title:
+    custom: odoo18
+    en_us: db
+
+  pgbouncer:
+    image: edoburu/pgbouncer
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    environment:
+      DB_HOST: db
+      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=P@ss@123@123"
+      AUTH_FILE: "/etc/pgbouncer/userlist.txt"
+      POOL_MODE: "session"
+      MAX_CLIENT_CONN: "100"
+      DEFAULT_POOL_SIZE: "30"
+      LISTEN_PORT: "6432"
+    volumes:
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt
+    ports:
+      - "6432:6432"
+    depends_on:
+      db:
+        condition: service_healthy

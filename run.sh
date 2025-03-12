@@ -10,13 +10,9 @@ rm -rf $DESTINATION/.git
 # Create PostgreSQL directory
 mkdir -p $DESTINATION/postgresql
 
-# Create the userlist.txt file if it doesn't exist
-mkdir -p $DESTINATION/pgbouncer
-touch $DESTINATION/pgbouncer/userlist.txt
-
 # Change ownership to current user and set restrictive permissions for security
 sudo chown -R $USER:$USER $DESTINATION
-sudo chmod -R 777 $DESTINATION  # Only the user has access
+sudo chmod -R 700 $DESTINATION  # Only the user has access
 
 # Check if running on macOS
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -44,10 +40,16 @@ else
 fi
 
 # Set file and directory permissions after installation
-find $DESTINATION -type f -exec chmod 777 {} \;
-find $DESTINATION -type d -exec chmod 777 {} \;
+find $DESTINATION -type f -exec chmod 644 {} \;
+find $DESTINATION -type d -exec chmod 755 {} \;
 
 # Run Odoo
 docker-compose -f $DESTINATION/docker-compose.yml up -d
 
-echo "Odoo started at http://localhost:$PORT | Master Password: falconvalley | Live chat port: $CHAT"
+sudo chmod -R 777 $DESTINATION/addons
+sudo chmod -R 777 $DESTINATION/etc
+sudo chmod -R 777 $DESTINATION/postgresql
+sudo chmod -R 777 $DESTINATION/pgbouncer
+
+
+echo "Odoo started at http://localhost:$PORT | Master Password: P@ss@123 | Live chat port: $CHAT"
