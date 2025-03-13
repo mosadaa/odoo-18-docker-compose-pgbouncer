@@ -15,30 +15,15 @@ cd /opt
 curl -s https://raw.githubusercontent.com/HaithamSaqr/odoo-18-docker-compose-pgbouncer/master/run.sh | sudo bash -s odoo18 11018 21018
 ```
 
-Some arguments:
-* First argument (**odoo-one**): Odoo deploy folder
-* Second argument (**10018**): Odoo port
-* Third argument (**20018**): live chat port
+ to use casa os 
 
-If `curl` is not found, install it:
+run 
 
-``` bash
-$ sudo apt-get install curl
-# or
-$ sudo yum install curl
-```
+git clone --depth=1 https://github.com/HaithamSaqr/odoo-18-docker-compose-pgbouncer odoo18
 
-<p>
-<img src="screenshots/odoo-18-docker-compose.gif" width="100%">
-</p>
+then inport   casaos-compose.yml  to casa
 
-## Usage
-
-Start the container:
-``` sh
-docker-compose up
-```
-Then open `localhost:10018` to access Odoo 18.
+ 
 
 - **If you get any permission issues**, change the folder permission to make sure that the container is able to access the directory:
 
@@ -54,4 +39,4 @@ $ sudo chmod -R 777 postgresql
 ports:
  - "10018:8069"
 ```
-
+ 
