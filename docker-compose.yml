@@ -69,11 +69,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      healthcheck:
-        test: [ "CMD", "pg_isready", "-U", "odoo", "-d", "postgres", "-h", "db" ]
-        interval: 5s
-        timeout: 5s
-        retries: 5
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "odoo", "-d", "postgres", "-h", "db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:latest
