@@ -34,8 +34,8 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "11018:8069"
-      - "21018:8072"
+      - "10018:8069"
+      - "20018:8072"
     tty: true
     command: odoo
     environment:

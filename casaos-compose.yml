@@ -1,8 +1,7 @@
 name: odoo18
 services:
   db:
-    cpu_shares: 50
-    command: []
+    cpu_shares: 90
     container_name: odoo18-db
     deploy:
       resources:
@@ -14,15 +13,14 @@ services:
       - POSTGRES_USER=odoo
     hostname: odoo18-db
     healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -U odoo -d postgres
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
       timeout: 5s
       interval: 5s
       retries: 5
     image: postgres:17
     labels:
-      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+      casaos.category: Database
+      casaos.description: PostgreSQL database for Odoo
     restart: always
     shm_size: "2g"
     volumes:
@@ -35,21 +33,17 @@ services:
       - default
 
   odoo18:
-    cpu_shares: 50
+    cpu_shares: 90
     container_name: odoo18
     depends_on:
-      db:
+      pgbouncer:
         condition: service_healthy
-        required: true
       redis:
         condition: service_healthy
-        required: true
     deploy:
       resources:
         limits:
           memory: 4000M
-    tty: true
-    command: odoo
     environment:
       - HOST=pgbouncer
       - PASSWORD=odoo18@2024
@@ -58,7 +52,10 @@ services:
     hostname: odoo18
     image: odoo:18
     labels:
-      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+      casaos.category: Productivity
+      casaos.description: Odoo 18 with Redis and PgBouncer
+      casaos.port: "10018"
+      casaos.web_ui: http://localhost:10018
     ports:
       - target: 8069
         published: "10018"
@@ -68,6 +65,7 @@ services:
         protocol: tcp
     restart: always
     shm_size: "2g"
+    tty: true
     volumes:
       - type: bind
         source: /DATA/AppData/odoo18/addons
@@ -79,72 +77,79 @@ services:
         target: /etc/odoo
         bind:
           create_host_path: true
-    x-casaos:
-      author: self
-      category: self
-      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
-      index: /
-      is_uncontrolled: false
-      port_map: "10018"
-      scheme: http
-      title:
-        custom: odoo18
+    networks:
+      - default
+
+  pgbouncer:
+    cpu_shares: 90
+    container_name: odoo18-pgbouncer
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
+    environment:
+      - AUTH_FILE=/etc/pgbouncer/userlist.txt
+      - DATABASES=odoo=host=db port=5432 dbname=postgres user=odoo password=odoo18@2024
+      - DB_HOST=db
+      - DEFAULT_POOL_SIZE=30
+      - LISTEN_PORT=6432
+      - MAX_CLIENT_CONN=100
+      - POOL_MODE=session
+    hostname: odoo18-pgbouncer
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "odoo", "-d", "postgres", "-h", "db", "-p", "5432"]
+      timeout: 5s
+      interval: 5s
+      retries: 5
+    image: edoburu/pgbouncer:latest
+    labels:
+      casaos.category: Database
+      casaos.description: PgBouncer connection pooler for Odoo
+    ports:
+      - target: 6432
+        published: "6432"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /DATA/AppData/odoo18/pgbouncer/userlist.txt
+        target: /etc/pgbouncer/userlist.txt
+        bind:
+          create_host_path: true
     networks:
       - default
 
   redis:
-    cpu_shares: 50
-    command:
-      - redis-server --save 60 1 --loglevel warning
+    cpu_shares: 90
     container_name: odoo18-redis
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 2048M
+    hostname: odoo18-redis
     healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - ping
+      test: ["CMD", "redis-cli", "ping"]
       timeout: 5s
       interval: 5s
       retries: 5
     image: redis:latest
     labels:
-      icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
+      casaos.category: Cache
+      casaos.description: Redis caching server for Odoo
     ports:
       - target: 6379
         published: "6379"
         protocol: tcp
     restart: always
     volumes:
-      - /DATA/AppData/odoo18/redis:/data
-    networks:
-      - default
-    hostname: odoo18-redis
-
-  pgbouncer:
-    image: pgbouncer:latest
-    container_name: odoo18-pgbouncer
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-    environment:
-      DB_HOST: db
-      DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=odoo18@2024"
-      AUTH_FILE: "/etc/pgbouncer/userlist.txt"
-      POOL_MODE: "session"
-      MAX_CLIENT_CONN: "100"
-      DEFAULT_POOL_SIZE: "30"
-      LISTEN_PORT: "6432"
-    volumes:
-      - /DATA/AppData/odoo18/pgbouncer/userlist.txt
-    ports:
-      - "6432:6432"
-    depends_on:
-      db:
-        condition: service_healthy
+      - type: bind
+        source: /DATA/AppData/odoo18/redis
+        target: /data
+        bind:
+          create_host_path: true
     networks:
       - default
 
@@ -154,7 +159,7 @@ networks:
 
 x-casaos:
   author: self
-  category: self
+  category: Productivity
   icon: https://cdn.jsdelivr.net/gh/bigbeartechworld/big-bear-casaos/Apps/odoo/logo.jpg
   index: /
   is_uncontrolled: false
@@ -162,5 +167,5 @@ x-casaos:
   scheme: http
   store_app_id: odoo18
   title:
-    custom: odoo18
-    en_us: db
+    custom: Odoo18
+    en_us: Odoo 18
