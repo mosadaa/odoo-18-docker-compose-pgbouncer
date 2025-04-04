@@ -3,11 +3,13 @@ version: '3.7'
 services:
   db:
     image: postgres:17
+    shm_size: "2g"
     deploy:
       resources:
+        reservations:
+          memory: 4G
         limits:
-          memory: 2g
-    shm_size: '2gb'
+          memory: 6G
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo18@2024
@@ -23,11 +25,13 @@ services:
 
   odoo18:
     image: odoo:18
+    shm_size: "2g"
     deploy:
       resources:
+        reservations:
+          memory: 2G 
         limits:
-          memory: 2g
-    shm_size: '2gb'
+          memory: 4G
     depends_on:
       pgbouncer:
         condition: service_healthy
@@ -50,10 +54,13 @@ services:
 
   pgbouncer:
     image: edoburu/pgbouncer
+    shm_size: "2g"
     deploy:
       resources:
+        reservations:
+          memory: 128M  
         limits:
-          memory: 512m
+          memory: 256M
     environment:
       DB_HOST: db
       DATABASES: "odoo=host=db port=5432 dbname=postgres user=odoo password=odoo18@2024"
@@ -77,10 +84,13 @@ services:
 
   redis:
     image: redis:latest
+    shm_size: "2g"
     deploy:
       resources:
+        reservations:
+          memory: 512M 
         limits:
-          memory: 512m
+          memory: 1G
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
