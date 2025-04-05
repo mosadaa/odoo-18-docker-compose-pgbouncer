@@ -23,7 +23,7 @@ services:
         reservations:
           memory: 4G
         limits:
-          memory: 6G
+          memory: 4G
     shm_size: "2g"
     volumes:
       - type: bind
